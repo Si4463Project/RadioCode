@@ -1,6 +1,7 @@
 # Object files
 *.o
 *.ko
+/out
 
 # Libraries
 *.lib
@@ -11,6 +12,8 @@
 *.so
 *.so.*
 *.dylib
+*.dep
+*.uvgui*
 
 # Executables
 *.exe
