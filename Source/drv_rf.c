@@ -70,12 +70,14 @@ void modemInit(void)
   Si4436_set_property(INT_CTL_GROUP, INT_CTL_PH_ENABLE, int_ctl_ph_enable, 1);
   
   //set power level (very low, for testing)
-  uint8_t pa_pwr_lvl[1] = {0x12}; 
+  //uint8_t pa_pwr_lvl[1] = {0x01}; 
+  uint8_t pa_pwr_lvl[1] = {0x7F}; 
   Si4436_set_property(PA_GROUP, PA_PWR_LVL, pa_pwr_lvl, 1);
   
   //440MHz
   uint8_t freq_control_inte[1] = {0x39};
-  uint8_t freq_control_frac[3] = {0x0D, 0x55, 0x55};
+  //uint8_t freq_control_frac[3] = {0x0D, 0x55, 0x55};
+  uint8_t freq_control_frac[3] = {0x0D, 0x58, 0x55}; //tuned on spectrumanalyzer
   uint8_t modem_clkgen_band[1] = {0x0A};
   
   Si4436_set_property(FREQ_CONTROL_GROUP, FREQ_CONTROL_INTE, freq_control_inte, 1);
@@ -100,10 +102,10 @@ void modemInit(void)
   Si4436_set_property(PKT_GROUP, PKT_CONFIG1, pkt_config1, 1);
   
   //disable preamble and sync packets (for testing)
-  uint8_t preamble_tx_length[1] = {0x00};
-  Si4436_set_property(PREAMBLE_GROUP, PREAMBLE_TX_LENGTH, preamble_tx_length, 1);
-  uint8_t sync_config[1] = {0x80};
-  Si4436_set_property(SYNC_GROUP, SYNC_CONFIG, sync_config, 1);
+//  uint8_t preamble_tx_length[1] = {0x00};
+//  Si4436_set_property(PREAMBLE_GROUP, PREAMBLE_TX_LENGTH, preamble_tx_length, 1);
+//  uint8_t sync_config[1] = {0x80};
+//  Si4436_set_property(SYNC_GROUP, SYNC_CONFIG, sync_config, 1);
 }
 
 void modemInitDirect(void)

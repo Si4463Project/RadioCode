@@ -11,7 +11,7 @@ int main(void)
   configureGPIO(); //Just for discovery LEDs
 
   uint8_t dummyData[4] = {0x00, 0x55, 0xAA, 0xFF};
-  //uint8_t dummyData[1] = {0x00};
+  //uint8_t dummyData[1] = {0xFF};
   
   uint32_t time;
   
@@ -21,7 +21,7 @@ int main(void)
   
   //setRFState(TX_MODE);
   
-  time = millis()+5000;
+  time = millis()+30000;
   while(time>millis())
   {
     modemTX(dummyData, sizeof(dummyData), 0); //tx on hopchannel = 0
