@@ -141,7 +141,7 @@
             <RestoreTracepoints>1</RestoreTracepoints>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>12</TargetSelection>
+          <TargetSelection>13</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -429,14 +429,19 @@
               <FilePath>.\Source\drv_system.c</FilePath>
             </File>
             <File>
-              <FileName>drv_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Source\drv_spi.c</FilePath>
-            </File>
-            <File>
               <FileName>drv_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Source\drv_gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_Si4463.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\drv_Si4463.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_rf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\drv_rf.c</FilePath>
             </File>
           </Files>
         </Group>
