@@ -48,7 +48,7 @@ void modemInit(void)
 {
   //external oscillator
   //'SET_PROPERTY' 'GLOBAL_XO_TUNE' 52
-  uint8_t global_xo_tune[1] = {120};
+  uint8_t global_xo_tune[1] = {85}; //tuned on spectrumanalyzer
   Si4436_set_property(GLOBAL_GROUP, GLOBAL_XO_TUNE, global_xo_tune, 1);
   
   //set FRRs
@@ -76,8 +76,7 @@ void modemInit(void)
   
   //440MHz
   uint8_t freq_control_inte[1] = {0x39};
-  //uint8_t freq_control_frac[3] = {0x0D, 0x55, 0x55};
-  uint8_t freq_control_frac[3] = {0x0D, 0x58, 0x55}; //tuned on spectrumanalyzer
+  uint8_t freq_control_frac[3] = {0x0D, 0x55, 0x55};
   uint8_t modem_clkgen_band[1] = {0x0A};
   
   Si4436_set_property(FREQ_CONTROL_GROUP, FREQ_CONTROL_INTE, freq_control_inte, 1);
