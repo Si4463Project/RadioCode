@@ -89,8 +89,9 @@ void modemInit(void)
   uint8_t modem_tx_nco_mode[4] = {0x09, 0xC9, 0xC3, 0x80};
   uint8_t modem_freq_dev[3] = {0x00, 0x10, 0x62};
   uint8_t modem_fsk4_gain1[5] = {0x00, 0x1A, 0x58, 0xE4, 0x00};
-  uint8_t pkt_field_1_config[1] = {0x10}; //need this for 4GFSK
-  uint8_t pkt_config1[1] = {0x20}; //need this for 4GFSK
+  uint8_t pkt_field_1_config[1] = {0x10}; //need this for 4FSK
+  uint8_t pkt_config1[1] = {0x20}; //need this for 4FSK
+  uint8_t sync_config[1] = {0x0B}; //need this for 4FSK
   
   Si4436_set_property(MODEM_GROUP, MODEM_MOD_TYPE, modem_mod_type, 1);
   Si4436_set_property(MODEM_GROUP, MODEM_DATA_RATE, modem_data_rate, 3);
@@ -99,11 +100,13 @@ void modemInit(void)
   Si4436_set_property(MODEM_GROUP, MODEM_FSK4_GAIN1, modem_fsk4_gain1, 5);
   Si4436_set_property(PKT_GROUP, PKT_FIELD_1_CONFIG, pkt_field_1_config, 1);
   Si4436_set_property(PKT_GROUP, PKT_CONFIG1, pkt_config1, 1);
+  Si4436_set_property(SYNC_GROUP, SYNC_CONFIG, sync_config, 1);
   
   //disable preamble and sync packets (for testing)
 //  uint8_t preamble_tx_length[1] = {0x00};
 //  Si4436_set_property(PREAMBLE_GROUP, PREAMBLE_TX_LENGTH, preamble_tx_length, 1);
-//  uint8_t sync_config[1] = {0x80};
+//  uint8_t sync_config[1] = {0x80}; //non-4FSK
+//  uint8_t sync_config[1] = {0x8B}; //4FSK
 //  Si4436_set_property(SYNC_GROUP, SYNC_CONFIG, sync_config, 1);
 }
 

@@ -10,21 +10,21 @@ int main(void)
   configureSi4463();
   configureGPIO(); //Just for discovery LEDs
 
-  //uint8_t dummyData[4] = {0x00, 0x55, 0xAA, 0xFF};
-  //uint8_t dummyData[1] = {0xFF};
+  uint8_t dummyData[4] = {0x00, 0x55, 0xAA, 0xFF};
+  //uint8_t dummyData[1] = {0x00};
   
   uint32_t time;
   
   startupRF();
   modemInit();
-  modemInitDirect();
+  //modemInitDirect();
   
-  setRFState(TX_MODE);
+  //setRFState(TX_MODE);
   
   time = millis()+50000;
   while(time>millis())
   {
-    //modemTX(dummyData, sizeof(dummyData), 0); //tx on hopchannel = 0
+    modemTX(dummyData, sizeof(dummyData), 0); //tx on hopchannel = 0
     //delay(1);
     //delayMicroseconds(550);
   }
