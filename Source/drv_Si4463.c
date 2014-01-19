@@ -158,7 +158,7 @@ void Si4436_get_property(uint8_t group, uint8_t property, uint8_t * rxData, uint
   Si4436_Cmd_Response(txData, sizeof(txData), rxData, dataLength);
 }
 
-uint32_t getFRR(void)
+uint32_t getAllFRRs(void)
 {
   uint32_t returnval;
   
@@ -176,6 +176,23 @@ uint32_t getFRR(void)
   return returnval;
 }
 
+uint8_t getFRR(uint8_t whichFRR) //whichFRR is 1-indexed
+{
+  if((whichFRR > 4 ) || (whichFRR < 1)) //sanity check
+    return 0;
+  
+  uint8_t returnval;
+  
+  spi1_NSS_enable();
+
+  spi1Transfer(FRR_A_READ + whichFRR - 1);
+  returnval = spi1Transfer(0x00);
+
+  spi1_NSS_disable();
+  
+  return returnval;
+}
+
 void loadTxFifo(uint8_t *txData, uint8_t dataLength)
 {
   spi1_NSS_enable();
@@ -186,6 +203,19 @@ void loadTxFifo(uint8_t *txData, uint8_t dataLength)
   }
   spi1_NSS_disable();
 }
+
+void readRxFifo(uint8_t *rxData, uint8_t dataLength)
+{
+  spi1_NSS_enable();
+  spi1Transfer(READ_RX_FIFO);
+  for(uint8_t i = 0; i < dataLength; i++)
+  {
+    rxData[i] = spi1Transfer(0x00);
+  }
+  spi1_NSS_disable();
+}
+
+
 
 void clearInts(void)
 {

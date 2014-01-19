@@ -23,8 +23,10 @@ uint8_t spi1Transfer(uint8_t send);
 void Si4436_Cmd_Response(uint8_t *Tx, uint8_t txLength, uint8_t *Rx, uint8_t rxLength);
 void Si4436_set_property(uint8_t group, uint8_t property, uint8_t * data, uint8_t dataLength);
 void Si4436_get_property(uint8_t group, uint8_t property, uint8_t * rxData, uint8_t dataLength);
-uint32_t getFRR(void);
+uint32_t getAllFRRs(void);
+uint8_t getFRR(uint8_t);
 void loadTxFifo(uint8_t *txData, uint8_t dataLength);
+void readRxFifo(uint8_t *rxData, uint8_t dataLength);
 void clearInts(void);
 
 /*** Si4463 States ***/
@@ -126,13 +128,13 @@ void clearInts(void);
 
 #define PREAMBLE_GROUP                  0x10
 #define PREAMBLE_TX_LENGTH              0x00
-#define PREAMBLE_CONFIG_STD_1
-#define PREAMBLE_CONFIG_NSTD
-#define PREAMBLE_CONFIG_STD_2
-#define PREAMBLE_CONFIG
-#define PREAMBLE_PATTERN
-#define PREAMBLE_POSTAMBLE_CONFIG
-#define PREAMBLE_POSTAMBLE_PATTERN
+#define PREAMBLE_CONFIG_STD_1           0x01
+#define PREAMBLE_CONFIG_NSTD            0x02
+#define PREAMBLE_CONFIG_STD_2           0x03
+#define PREAMBLE_CONFIG                 0x04
+#define PREAMBLE_PATTERN                0x05
+#define PREAMBLE_POSTAMBLE_CONFIG       0x09
+#define PREAMBLE_POSTAMBLE_PATTERN      0x0A
 
 #define SYNC_GROUP                      0x11
 #define SYNC_CONFIG                     0x00
@@ -165,7 +167,7 @@ void clearInts(void);
 #define PKT_FIELD_5_CONFIG
 #define PKT_FIELD_5_CRC_CONFIG
 #define PKT_RX_FIELD_1_LENGTH
-#define PKT_RX_FIELD_1_CONFIG
+#define PKT_RX_FIELD_1_CONFIG           0x23
 #define PKT_RX_FIELD_1_CRC_CONFIG
 #define PKT_RX_FIELD_2_LENGTH
 #define PKT_RX_FIELD_2_CONFIG
@@ -182,7 +184,7 @@ void clearInts(void);
 
 #define MODEM_GROUP                     0x20
 #define MODEM_MOD_TYPE                  0x00
-#define MODEM_MAP_CONTROL
+#define MODEM_MAP_CONTROL               0x01
 #define MODEM_DSM_CTRL
 #define MODEM_DATA_RATE                 0x03
 #define MODEM_TX_NCO_MODE               0x06
@@ -198,26 +200,26 @@ void clearInts(void);
 #define MODEM_TX_FILTER_COEFF_1
 #define MODEM_TX_FILTER_COEFF_0
 #define MODEM_TX_RAMP_DELAY
-#define MODEM_MDM_CTRL
+#define MODEM_MDM_CTRL                  0x19
 #define MODEM_IF_CONTROL
-#define MODEM_IF_FREQ
+#define MODEM_IF_FREQ                   0x1B
 #define MODEM_DECIMATION_CFG1
 #define MODEM_DECIMATION_CFG0
-#define MODEM_BCR_OSR
+#define MODEM_BCR_OSR                   0x22
 #define MODEM_BCR_NCO_OFFSET
 #define MODEM_BCR_GAIN
 #define MODEM_BCR_GEAR
 #define MODEM_BCR_MISC1
 #define MODEM_BCR_MISC0
-#define MODEM_AFC_GEAR
+#define MODEM_AFC_GEAR                  0x2C
 #define MODEM_AFC_WAIT
 #define MODEM_AFC_GAIN
 #define MODEM_AFC_LIMITER
 #define MODEM_AFC_MISC
 #define MODEM_AFC_ZIFOFF
 #define MODEM_ADC_CTRL
-#define MODEM_AGC_CONTROL
-#define MODEM_AGC_WINDOW_SIZE
+#define MODEM_AGC_CONTROL               0x35
+#define MODEM_AGC_WINDOW_SIZE           0x38
 #define MODEM_AGC_RFPD_DECAY
 #define MODEM_AGC_IFPD_DECAY
 #define MODEM_FSK4_GAIN1                0x3B
@@ -228,21 +230,21 @@ void clearInts(void);
 #define MODEM_OOK_BLOPK
 #define MODEM_OOK_CNT1
 #define MODEM_OOK_MISC
-#define MODEM_RAW_SEARCH
+#define MODEM_RAW_SEARCH                0x44
 #define MODEM_RAW_CONTROL
 #define MODEM_RAW_EYE
 #define MODEM_ANT_DIV_MODE
 #define MODEM_ANT_DIV_CONTROL
-#define MODEM_RSSI_THRESH
+#define MODEM_RSSI_THRESH               0x4A
 #define MODEM_RSSI_JUMP_THRESH
-#define MODEM_RSSI_CONTROL
+#define MODEM_RSSI_CONTROL              0x4C
 #define MODEM_RSSI_CONTROL2
 #define MODEM_RSSI_COMP
 #define MODEM_CLKGEN_BAND               0x51
 
 #define MODEM_CHFLT_GROUP               0x21
-#define MODEM_CHFLT_RX1_CHFLT_COE
-#define MODEM_CHFLT_RX2_CHFLT_COE
+#define MODEM_CHFLT_RX1_CHFLT_COE       0x00
+#define MODEM_CHFLT_RX2_CHFLT_COE       0x12
 
 #define PA_GROUP                        0x22
 #define PA_MODE
