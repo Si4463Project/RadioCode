@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef DRV_RF_H
+#define DEV_RF_H
 
 void startupRF(void);
 void shutdownRF(void);
@@ -287,3 +288,5 @@ static uint8_t FREQ_CONTROL_SET[FREQ_CONTROL_SIZE] = { 0x39, 0x0D, 0x55, 0x55, 0
 /*RX_HOP
 
 */
+
+#endif

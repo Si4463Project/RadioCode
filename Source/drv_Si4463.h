@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef DRV_SI4463_H
+#define DRV_SI4463_H
 
 #define NSS       GPIO_Pin_0
 #define NSS_GPIO  GPIOB
@@ -289,3 +290,5 @@ void clearInts(void);
 #define RX_HOP_CONTROL                  0x00
 #define RX_HOP_TABLE_SIZE               0x01
 #define RX_HOP_TABLE_ENTRY              0x02
+
+#endif

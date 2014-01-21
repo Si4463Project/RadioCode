@@ -355,9 +355,9 @@
             <uSurpInc>0</uSurpInc>
             <VariousControls>
               <MiscControls>--c99</MiscControls>
-              <Define>USE_STDPERIPH_DRIVER</Define>
+              <Define>USE_STDPERIPH_DRIVER STM32F30X</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Libraries\STM32F30x_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F30x\Include;.\Source</IncludePath>
+              <IncludePath>.\Libraries\STM32F30x_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F30x\Include;.\Source;.\Libraries\STM32_USB-FS-Device_Driver\inc;.\Source\vcp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -557,6 +557,76 @@
               <FileName>stm32f30x_wwdg.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Libraries\STM32F30x_StdPeriph_Driver\src\stm32f30x_wwdg.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>vcp</GroupName>
+          <Files>
+            <File>
+              <FileName>usb_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_init.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_int.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_int.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_regs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_regs.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_sil.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Libraries\STM32_USB-FS-Device_Driver\src\usb_sil.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32_it.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\stm32_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_prop.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\usb_prop.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\usb_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_istr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\usb_istr.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_endp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\usb_endp.c</FilePath>
+            </File>
+            <File>
+              <FileName>hw_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\hw_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\vcp\usb_desc.c</FilePath>
             </File>
           </Files>
         </Group>
