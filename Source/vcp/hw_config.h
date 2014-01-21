@@ -42,12 +42,15 @@
 #define BULK_MAX_PACKET_SIZE  0x00000040
 
 #ifndef USB_DISC_DEV
-	#define USB_DISC_DEV         GPIOA
-	#define USB_DISC_PIN         GPIO_Pin_12
-//	#define USB_DISC_RCC         RCC_APB2Periph_GPIOA
-	//#define USB_DISC_DEV         GPIOA
-	//#define USB_DISC_PIN         12
-	#define USB_DISC_RCC         RCC_AHBPeriph_GPIOA
+  #if defined(STM32F30X)
+    #define USB_DISC_RCC         RCC_AHBPeriph_GPIOA
+    #define USB_DISC_DEV         GPIOA
+    #define USB_DISC_PIN         GPIO_Pin_12
+  #else
+    #define USB_DISC_RCC         RCC_APB2Periph_GPIOA
+    #define USB_DISC_DEV         GPIOA
+    #define USB_DISC_PIN         12
+  #endif
 #endif
 
 /* Exported functions ------------------------------------------------------- */
