@@ -1,13 +1,11 @@
 #include "board.h"
 
-uint32_t time=0;
-
 extern __IO uint32_t receiveLength;  // HJI
 extern __IO uint32_t packetSent;     // HJI
 
 //#define TX
-//#define RX
-#define VCP
+#define RX
+//#define VCP_TEST
 
 int main(void)
 {
@@ -18,20 +16,18 @@ int main(void)
   configureSi4463();
   startupRF();
   modemInit();
-  uint8_t dummyData[5] = {0x80, 0x55, 0xAA, 0xFF, 0x01};
-//  uint8_t dummyData[1] = {0x00};
+  uint8_t dummyData[] = {0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01};
+  uint16_t pwmArray[4] = { 0 };
   #endif
   
-  #ifdef VCP
   Set_System();
   Set_USBClock();
   USB_Interrupts_Config();
   USB_Init();
-  #endif
   
   
   configureGPIO(); //Just for discovery LEDs
-  uint32_t time;
+  uint32_t time = 0;
   
 
   /**********************************
@@ -40,15 +36,11 @@ int main(void)
   
   #ifdef TX
   modemTxInit();
-  //delay(1000);
-  //modemInitDirect();
-  //setRFState(TX_MODE);
   #endif
   
   #ifdef RX
   modemRxInit();
-  uint8_t mark = 1;
-  //GPIOE->ODR |= 0x0F00;
+  pwmOutputInit();
   #endif
 
 
@@ -80,7 +72,7 @@ int main(void)
       mark = 1;
       //blink = millis();
     //}
-    delay(50);
+    delay(750);
     //delayMicroseconds(550);
   }
   #endif
@@ -92,15 +84,13 @@ int main(void)
   uint8_t rxStartData[8] = {START_RX, 0x00, 0x00, 0x00, sizeof(dummyData), 0x08, 0x03, 0x08}; //rx - channel0 - start immediately - datalength (2B) - timeout=rearmRX - valid=readymode - invalid=rearmRX
   Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
   
-  uint8_t RXcount = 0;
   uint8_t RXed[sizeof(dummyData)];
   uint8_t RXbool = 0;
   uint8_t modem_status_data[2] = {GET_MODEM_STATUS,0x00}; //tx this to read back modem status info, make this a drv_Si function later TODO:
-  
-  while (RXcount < 8)
+  char rssiSend[] = {0x00};
+  char cr[] = {0x00};
+  while (1)
   {
-    //getRFState();
-    //delay(100);
     
     while(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ)); //wait for int
     Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
@@ -108,7 +98,18 @@ int main(void)
     clearFIFOs();
     clearInts();
     
-    //check RXd data is OK
+    if(usbIsConfigured())
+    {
+      CDC_Send_DATA((uint8_t*)rssiSend, sizeof(rssiSend));
+      while(packetSent);
+      uint8_t tempchar[1] = { cmdResponse[2]} ;
+      CDC_Send_DATA((uint8_t*)tempchar, sizeof(tempchar));
+      while(packetSent);
+      CDC_Send_DATA((uint8_t*)cr, sizeof(cr));
+      while(packetSent);
+    }
+    
+    //check RXd data is OK (pkt compare)
     RXbool = 1;
     for(int i=0; i< sizeof(dummyData); i++)
     {
@@ -116,28 +117,21 @@ int main(void)
         RXbool = 0;
     }
     
-    if (RXbool)
+    if (RXbool) //packet checks out
     {
       GPIOE->ODR = (uint16_t)(RXed[1]<<8);
-      //GPIOE->ODR |= (0x0100 << RXcount); //turn on another LED
-      //RXcount++;
+      pwmArray[0] = 1000+(RXed[1] * 8);
+      setPWM(pwmArray);
     }
     RXbool = 1;
     
     //re-enter RX mode
     Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
     
-//    //if (0x10 & getFRR(4))
-//    //{
-//      RXcount++;
-//      clearFIFOs();
-//      GPIOE->ODR |= (0x0100 << RXcount); //turn on another LED
-//    //}
-    
   }
   #endif
   
-    #ifdef VCP
+  #ifdef VCP_TEST
   GPIO_SetBits(GPIOE, GPIO_Pin_9); //first led on
   while(1)
   {
@@ -173,12 +167,6 @@ int main(void)
       
       GPIO_ResetBits(GPIOE, GPIO_Pin_14);
     }
-    
-//    GPIO_SetBits(GPIOE, GPIO_Pin_14);
-//    char test[] = {"Test!\r\n"};
-//    CDC_Send_DATA((uint8_t*)test, sizeof(test));
-//    //while(packetSent);
-//    GPIO_ResetBits(GPIOE, GPIO_Pin_14);
     
     delay(10);
   }

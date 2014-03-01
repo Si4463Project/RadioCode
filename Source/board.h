@@ -26,5 +26,6 @@
 #include "drv_gpio.h"
 #include "drv_Si4463.h"
 #include "drv_rf.h"
+#include "drv_pwm.h"
 
 #endif /* BOARD_H */
