@@ -65,6 +65,22 @@ void modemInit(void)
   Si4436_set_property(FREQ_CONTROL_GROUP, 0x00, FREQ_CONTROL_SET, sizeof(FREQ_CONTROL_SET));
   //rx hop
   
+  // set GPIOs to output data
+  // 11 = RX_DATA_CLK
+  // 14 = RX_DATA
+  // 15 = RX_RAW_DATA
+  // 18 = VALID_PREAMBLE
+  // 19 = INVALID_PREAMBLE
+  // 1A = SYNC_WORD_DETECT
+  // 1B = CCA (rssi above modem_rssi_thresh, non-latched)
+  // 20 = TX_STATE
+  // 21 = RX_STATE
+  // GPIO0 = TXEN
+  // GPIO1 = CTS (default!)
+  // GPIO2 = RXEN
+  uint8_t gpio_pin_conf[GPIO_PIN_CFG_tx_length] = {GPIO_PIN_CFG, 0x20, 0x00, 0x21, 0x00, 0x00, 0x00, 0x00}; 
+  Si4436_Cmd_Response(gpio_pin_conf, sizeof(gpio_pin_conf), cmdResponse, 0);
+  
   //RX stuff
   //long preamble timeout
 //  uint8_t preamble_config_std_2[3] = {0xFF, 0x31}; //long timeout, preamble config
@@ -93,17 +109,6 @@ void modemRxInit(void)
 //  uint8_t int_ctl_modem_enable[1] = {0x02}; //PREAMBLE_DETECT interrupt only
 //  uint8_t int_ctl_modem_enable[1] = {0x04}; //INVALID_PREAMBLE interrupt only
 //  Si4436_set_property(INT_CTL_GROUP, INT_CTL_MODEM_ENABLE, int_ctl_modem_enable, 1);
-  
-  //set GPIO0 to output data
-  //11 = RX_DATA_CLK
-  //14 = RX_DATA
-  //15 = RX_RAW_DATA
-  //18 = VALID_PREAMBLE
-  //19 = INVALID_PREAMBLE
-  //1A = SYNC_WORD_DETECT
-  //1B = CCA (rssi above modem_rssi_thresh, non-latched)
-  uint8_t gpio_pin_conf[GPIO_PIN_CFG_tx_length] = {GPIO_PIN_CFG, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; 
-  Si4436_Cmd_Response(gpio_pin_conf, sizeof(gpio_pin_conf), cmdResponse, 0);
 }
 
 void modemInitDirect(void)

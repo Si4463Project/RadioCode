@@ -3,8 +3,8 @@
 extern __IO uint32_t receiveLength;  // HJI
 extern __IO uint32_t packetSent;     // HJI
 
-//#define TX
-#define RX
+#define TX
+//#define RX
 //#define VCP_TEST
 
 int main(void)
@@ -55,7 +55,8 @@ int main(void)
   time = millis()+50000;
   //uint32_t blink = 0;
   uint8_t mark = 1;
-  while(time>millis())
+//  while(time>millis())
+  while(1)
   {
     dummyData[1] = mark;
     modemTX(dummyData, sizeof(dummyData), 0); //tx on hopchannel = 0
@@ -72,7 +73,7 @@ int main(void)
       mark = 1;
       //blink = millis();
     //}
-    delay(750);
+    delay(5);
     //delayMicroseconds(550);
   }
   #endif
