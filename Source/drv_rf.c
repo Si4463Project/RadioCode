@@ -123,7 +123,7 @@ void modemTX(uint8_t *txData, uint8_t dataLength, uint8_t hopchannel)
 {
   loadTxFifo(txData, dataLength);
   clearInts();
-  uint8_t cmdData[5] = {START_TX, hopchannel, 0x80, 0x00, dataLength}; //TX right away, return to RX mode, pkt length 8bit max
+  uint8_t cmdData[5] = {START_TX, hopchannel, 0x30, 0x00, dataLength}; //TX right away, return to READY mode, pkt length 8bit=255 max
   Si4436_Cmd_Response(cmdData, sizeof(cmdData), cmdResponse, 0);
   
   //wait for TX fifo to empty

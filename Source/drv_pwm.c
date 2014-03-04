@@ -60,3 +60,31 @@ void setPWM(uint16_t * pwmArray)
   TIM2->CCR3 = pwmArray[2];
   TIM2->CCR4 = pwmArray[3];
 }
+
+void packServos(uint16_t * servos, uint8_t * pack)
+{
+  uint16_t temp[4];
+  for (int i=0;i<4;i++)
+  {
+    temp[i] = servos[i]-1000;
+  }
+  pack[6] = (uint8_t)(temp[0] & 0xff);
+  pack[7] = (uint8_t)(temp[1] & 0xff);
+  pack[8] = (uint8_t)(temp[2] & 0xff);
+  pack[9] = (uint8_t)(temp[3] & 0xff);
+  pack[10] = (uint8_t)( ((temp[0] >> 8) & 3) | (((temp[1] >> 8) & 3) << 2) | (((temp[2] >> 8) & 3) << 4) | (((temp[3] >> 8) & 3) << 6) );
+}
+
+void unpackServos(uint16_t * servos, uint8_t * pack)
+{
+  uint16_t temp[4];
+  temp[0] = (uint16_t)((uint16_t)pack[6] | (uint16_t)((pack[10] & 0x03) << 8));
+  temp[1] = (uint16_t)((uint16_t)pack[7] | (uint16_t)((pack[10] & 0x0c) << 6));
+  temp[2] = (uint16_t)((uint16_t)pack[8] | (uint16_t)((pack[10] & 0x30) << 4));
+  temp[3] = (uint16_t)((uint16_t)pack[9] | (uint16_t)((pack[10] & 0xc0) << 2));
+  
+  for (int i=0;i<4;i++)
+  {
+    servos[i] = temp[i]+1000;
+  }
+}

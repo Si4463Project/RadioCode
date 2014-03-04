@@ -3,8 +3,8 @@
 extern __IO uint32_t receiveLength;  // HJI
 extern __IO uint32_t packetSent;     // HJI
 
-#define TX
-//#define RX
+//#define TX
+#define RX
 //#define VCP_TEST
 
 int main(void)
@@ -16,8 +16,16 @@ int main(void)
   configureSi4463();
   startupRF();
   modemInit();
-  uint8_t dummyData[] = {0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01, 0x80, 0x55, 0xAA, 0xFF, 0x01};
-  uint16_t pwmArray[4] = { 0 };
+  uint8_t cmdResponse[MAX_RESPONSE_LENGTH];
+  uint8_t modem_status_data[2] = {GET_MODEM_STATUS,0x00}; //tx this to read back modem status info, make this a drv_Si function later TODO:
+  
+  uint8_t txData[11] = {0x56, 0x45, 0x32, 0x4E, 0x50, 0x51, 0, 0, 0, 0, 0}; //six byte VE2NPQ, five bytes servo data 10bitx4=40bit, 11 bytes total
+  uint8_t rxData[sizeof(txData)] = {0};
+  memcpy(rxData, txData, sizeof(txData));
+  uint16_t servos[4] = {1500, 1500, 1500, 1500};
+  
+  //move this to its own function
+  uint8_t rxStartData[8] = {START_RX, 0x00, 0x00, 0x00, sizeof(rxData), 0x08, 0x03, 0x08}; //rx - channel0 - start immediately - datalength (2B) - timeout=rearmRX - valid=readymode - invalid=rearmRX
   #endif
   
   Set_System();
@@ -26,108 +34,180 @@ int main(void)
   USB_Init();
   
   
-  configureGPIO(); //Just for discovery LEDs
-  uint32_t time = 0;
-  
+  configureGPIO(); //Just for discovery LEDs, PE8-PE15
 
   /**********************************
   Init TXRX
   **********************************/
   
   #ifdef TX
-  modemTxInit();
+//  modemTxInit();
   #endif
   
   #ifdef RX
-  modemRxInit();
+//  modemRxInit();
   pwmOutputInit();
   #endif
-
-
-
 
   /**********************************
   Loop
   **********************************/
   
-  
+  /** TX ***************************/
   #ifdef TX
-  time = millis()+50000;
-  //uint32_t blink = 0;
-  uint8_t mark = 1;
-//  while(time>millis())
+  
+  uint32_t lastTX = 0;
+  uint16_t servosRX[4] = {1500, 1500, 1500, 1500};
+  uint32_t servotime = 0;
+  uint8_t RXbool = 0;
+  
+  
   while(1)
   {
-    dummyData[1] = mark;
-    modemTX(dummyData, sizeof(dummyData), 0); //tx on hopchannel = 0
-    clearFIFOs();
-    //if (millis() > (blink + 500))
-    //{
-      //if (blink == 0)
-      //{
-        //GPIOE->ODR |= 0xAA00;
-      //}
-    GPIOE->ODR = (uint16_t)(mark<<8);
-    mark = mark << 1;
-    if (mark == 0)
-      mark = 1;
-      //blink = millis();
-    //}
-    delay(5);
-    //delayMicroseconds(550);
-  }
-  #endif
-
-  #ifdef RX
-  uint8_t cmdResponse[MAX_RESPONSE_LENGTH];
-  
-  //enter RX mode data
-  uint8_t rxStartData[8] = {START_RX, 0x00, 0x00, 0x00, sizeof(dummyData), 0x08, 0x03, 0x08}; //rx - channel0 - start immediately - datalength (2B) - timeout=rearmRX - valid=readymode - invalid=rearmRX
-  Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
-  
-  uint8_t RXed[sizeof(dummyData)];
-  uint8_t RXbool = 0;
-  uint8_t modem_status_data[2] = {GET_MODEM_STATUS,0x00}; //tx this to read back modem status info, make this a drv_Si function later TODO:
-  char rssiSend[] = {0x00};
-  char cr[] = {0x00};
-  while (1)
-  {
-    
-    while(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ)); //wait for int
-    Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
-    readRxFifo(RXed, sizeof(dummyData));
-    clearFIFOs();
-    clearInts();
-    
-    if(usbIsConfigured())
+    // Send data at 50Hz
+    // RX state in gaps
+    if((lastTX+1000) < millis())
     {
-      CDC_Send_DATA((uint8_t*)rssiSend, sizeof(rssiSend));
-      while(packetSent);
-      uint8_t tempchar[1] = { cmdResponse[2]} ;
-      CDC_Send_DATA((uint8_t*)tempchar, sizeof(tempchar));
-      while(packetSent);
-      CDC_Send_DATA((uint8_t*)cr, sizeof(cr));
-      while(packetSent);
+      packServos(servos, txData);
+      modemTxInit();
+      clearInts();
+      modemTX(txData, sizeof(txData), 0);
+      
+      // update LEDs
+      for(int i=0; i<4; i++)
+      {
+        if(servos[i] < 1500)
+          GPIO_ResetBits(GPIOE, GPIO_Pin_8<<i);
+        else
+          GPIO_SetBits(GPIOE, GPIO_Pin_8<<i);
+      }
+      
+      // update servos
+      if((servotime+1000) < millis()) // change servos every second
+      {
+        uint16_t newservo = ((servos[0] == 1000) ? 2000 : 1000);
+        for(int i=0; i<4; i++)
+        {
+          servos[i] = newservo;
+        }
+        servotime = millis();
+      }
+      
+      // go back to RX mode
+      modemRxInit();
+      clearInts();
+      Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
+      
+      lastTX = millis();
     }
     
-    //check RXd data is OK (pkt compare)
-    RXbool = 1;
-    for(int i=0; i< sizeof(dummyData); i++)
+    if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET)//wait for int
     {
-      if((i != 1) & (RXed[i] != dummyData[i]))
+      Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
+      readRxFifo(rxData, sizeof(rxData));
+      clearFIFOs();
+      clearInts();
+      
+    // check RXd header data is OK (pkt compare)
+    RXbool = 1;
+    for(int i=0; i< 6; i++)
+    {
+      if(rxData[i] != txData[i])
         RXbool = 0;
     }
     
-    if (RXbool) //packet checks out
+    if (RXbool) // packet header checks out
     {
-      GPIOE->ODR = (uint16_t)(RXed[1]<<8);
-      pwmArray[0] = 1000+(RXed[1] * 8);
-      setPWM(pwmArray);
+      unpackServos(servosRX, rxData);
+      for(int i=0; i<4; i++)
+      {
+        if(servosRX[i] < 1500)
+          GPIO_ResetBits(GPIOE, GPIO_Pin_8<<(i+4));
+        else
+          GPIO_SetBits(GPIOE, GPIO_Pin_8<<(i+4));
+      }
+      
     }
     RXbool = 1;
     
-    //re-enter RX mode
-    Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
+    // dont re-enter RX mode, already got pkt
+    }
+  }
+  #endif
+
+  /** RX ***************************/
+  #ifdef RX
+  
+  // enter RX mode
+  modemRxInit();
+  clearInts();
+  Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
+  
+  uint8_t RXbool = 0;
+  uint32_t lastRX = 0;
+
+  while (1)
+  {
+    
+    if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for int (going low)
+      {
+      lastRX = millis();
+      Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
+      readRxFifo(rxData, sizeof(rxData));
+      clearFIFOs();
+      clearInts();
+      
+      // check RXd header data is OK (pkt compare)
+      RXbool = 1;
+      for(int i=0; i< 6; i++)
+      {
+        if(rxData[i] != txData[i])
+          RXbool = 0;
+      }
+      
+      if (RXbool) //packet header checks out
+      {
+        unpackServos(servos, rxData);
+        
+        // update LEDs
+        for(int i=0; i<4; i++)
+        {
+          if(servos[i] < 1500)
+            GPIO_ResetBits(GPIOE, GPIO_Pin_8<<i);
+          else
+            GPIO_SetBits(GPIOE, GPIO_Pin_8<<i);
+        }
+        
+        // update servos
+        
+      }
+      RXbool = 1;
+      
+      
+      // re-enter RX mode
+      modemRxInit();
+      clearFIFOs();
+      clearInts();
+      Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
+    }
+      
+    if((lastRX+10 < millis()) && (lastRX != 0))
+    {
+      packServos(servos, txData);
+      clearFIFOs();
+      clearInts();
+      modemTxInit();
+      modemTX(txData, sizeof(txData), 0);
+      
+      lastRX = 0;
+      
+      // re-enter RX mode
+      modemRxInit();
+      clearFIFOs();
+      clearInts();
+      Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
+
+    }
     
   }
   #endif
