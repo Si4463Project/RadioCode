@@ -66,7 +66,7 @@ int main(void)
   {
     // Send data at 50Hz
     // RX state in gaps
-    if((lastTX+1000) < millis())
+    if((lastTX+50) < millis())
     {
       packServos(servos, txData);
       modemTxInit();
@@ -144,14 +144,13 @@ int main(void)
   Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
   
   uint8_t RXbool = 0;
-  uint32_t lastRX = 0;
+  uint32_t ResponseNeeded = 0;
 
   while (1)
   {
     
     if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for int (going low)
       {
-      lastRX = millis();
       Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
       readRxFifo(rxData, sizeof(rxData));
       clearFIFOs();
@@ -178,6 +177,8 @@ int main(void)
             GPIO_SetBits(GPIOE, GPIO_Pin_8<<i);
         }
         
+        ResponseNeeded = 1;
+        
         // update servos
         
       }
@@ -191,7 +192,7 @@ int main(void)
       Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
     }
       
-    if((lastRX+10 < millis()) && (lastRX != 0))
+    if(ResponseNeeded == 1)
     {
       packServos(servos, txData);
       clearFIFOs();
@@ -199,14 +200,13 @@ int main(void)
       modemTxInit();
       modemTX(txData, sizeof(txData), 0);
       
-      lastRX = 0;
-      
       // re-enter RX mode
       modemRxInit();
       clearFIFOs();
       clearInts();
       Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
 
+      ResponseNeeded = 0;
     }
     
   }
