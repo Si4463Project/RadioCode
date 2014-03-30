@@ -692,78 +692,123 @@ uint8_t TW88Read(uint8_t regAddr, uint8_t *data)
 }
 
 
-uint8_t TW88_AddOSD_Win(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
-{
-	/// OSD
-	while (TW88Write(0x94,0x0C)==0) {
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}
+//uint8_t TW88_AddOSD_Win(uint8_t x, uint8_t y, uint8_t w, uint8_t h)
+//{
+////  while (TW88Write(0x94,0x0C)==0) {
+////      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////  }
+////  while (TW88Write(0x9E,0x00)==0) {
+////      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////  }
+////  while (TW88Write(0x9C,0x00)==0) { // 03
+////      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////  }
 
-	
-	while (TW88Write(0x9E,0x00)==0) {
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}
-	
-	while (TW88Write(0x9C,0x03)==0) {
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}
-	
-	while (TW88Write(0xA1,x)==0) { // OSD H start
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}	
-	while (TW88Write(0xA2,y)==0) {  // OSD V STart
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}	
-	
-	while (TW88Write(0xA3,w)==0) {  // OSD H Len
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}		
-	while (TW88Write(0xA4,h)==0) {  // OSD V Len
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}	
-	
-	while (TW88Write(0xA5,0x86)==0) {  // OSD Window border
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}
-	
+//  while (TW88Write(0xA1,x)==0) { // OSD H start
+//      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//  }
+//  while (TW88Write(0xA2,y)==0) {  // OSD V STart
+//      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//  }
+//  while (TW88Write(0xA3,w)==0) {  // OSD H Len
+//      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//  }
+//  while (TW88Write(0xA4,h)==0) {  // OSD V Len
+//      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//  }
 
-	while (TW88Write(0x94,0x00)==0) {  //enable OSD RAM access
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}	
+////  while (TW88Write(0xA5,0x00)==0) {  // OSD Window border 86
+////      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////  }
+////  while (TW88Write(0x94,0x00)==0) {  //enable OSD RAM access
+////      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////  }
 
-	for (uint8_t idx=0; idx<64;idx++) {
-		
+//  for (uint8_t idx=0; idx<64;idx++) {
 
+////    while (TW88Write(0x9C,0x0F)==0) { //font color
+////        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+////    }
+//    while (TW88Write(0x96,idx)==0) {  //RAM Address window position type of thing char index or something
+//        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//    }
+//    while (TW88Write(0x97,0x40+idx)==0) {//+idx)==0) {  //char index
+//        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//    }
+//    while (TW88Write(0x98,0x07)==0) {
+//        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//    }
+//  }
 
-		while (TW88Write(0x9C,0x0F)==0) { //font color
-				I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-		}		
-		while (TW88Write(0x96,idx)==0) {  //RAM Address window position type of thing char index or something
-				I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-		}	
-		
-		while (TW88Write(0x97,0x40+idx)==0) {  //char index
-				I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-		}				
-		while (TW88Write(0x98,0x07)==0) {
-				I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-		}
-			
-	}		
+//  while (TW88Write(0x9F,0x01)==0) {
+//      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+//  }
+//  
+//  return 1;
+//}
 
-	
-	while (TW88Write(0x9F,0x01)==0) {
-			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
-	}
-	
-	return 1;
-
+void setupOSD() {
+  while (TW88Write(0xA1,0x00)==0) { // OSD H start
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA2,0x00)==0) {  // OSD V STart
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA3,0x3F)==0) {  // OSD H Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA4,0x01)==0) {  // OSD V Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  
+  while (TW88Write(0x9F,0x01)==0) { // OSD enable
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  
+  char hrssi[] = "Host RSSI:     dBm";
+  char rrssi[] = "Remote RSSI:     dBm";
+  
+  for (int i=0; i<64;i++) {
+    putOSDchar(i,' ');
+  }
+  
+  for(int i=0; i<(sizeof(hrssi)-1);i++) {
+    putOSDchar(0+i,hrssi[i]);
+  }
+  for(int i=0; i<(sizeof(rrssi)-1);i++) {
+    putOSDchar(35+i,rrssi[i]);
+  }
+  
 }
 
+void putOSDrssi(uint8_t r, int8_t rssi){
+  char str[] = "   ";
+  uint8_t hpos = 11, rpos = 48;
+  
+  sprintf(str, "%i", rssi);
+  
+  if(r) { // r=0 host, r=1 remote
+    for(int i=0; i<(sizeof(str)-1);i++) {
+      putOSDchar(rpos+i,str[i]);
+    }
+  } else {
+    for(int i=0; i<(sizeof(str)-1);i++) {
+      putOSDchar(hpos+i,str[i]);
+    }
+  }
+}
 
-
-
-
+void putOSDchar(uint8_t y, char c){
+  while (TW88Write(0x96,y)==0) { // RAM Address window position type of thing char index or something
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0x97,c)==0) { // char index
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0x98,0x07)==0) {
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+}
 
 void ReadAllTW88Regs(void)
 {

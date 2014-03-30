@@ -7,10 +7,13 @@ volatile TouchCoords touch_coords;
 uint8_t rx_buffer[RX_BUFFER_LENGTH];
 uint8_t rx_counter;
 
-//#define VIDEO
 //#define TX
 #define RX
 //#define VCP_TEST
+
+#ifdef TX
+#define VIDEO
+#endif
 
 
 int main(void)
@@ -30,7 +33,8 @@ int main(void)
   GPIO_SetBits(GPIOE, GPIO_Pin_9);
   TW88_Init();
   GPIO_SetBits(GPIOE, GPIO_Pin_10);
-  TW88_AddOSD_Win(0,0,0x3F,1);
+//  TW88_AddOSD_Win(0,0,0x3F,1);
+  setupOSD();
   GPIO_SetBits(GPIOE, GPIO_Pin_11);
   #endif
   
@@ -83,6 +87,7 @@ int main(void)
   uint32_t servotime = 0;
   uint8_t RXbool = 0;
   uint8_t hostrssi = 0, remoterssi = 0;
+  uint32_t lastOSDupdate = 0;
   
   
   while(1)
@@ -106,6 +111,9 @@ int main(void)
       }
       
       // update servos
+      //
+      // CHANGE THIS TO BE UPDATED FROM TOUCHSCREEN
+      //
       if((servotime+1000) < millis()) // change servos every second
       {
         uint16_t newservo = ((servos[0] == 1000) ? 2000 : 1000);
@@ -124,38 +132,45 @@ int main(void)
       lastTX = millis();
     }
     
-    if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET)//wait for int
+    if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for RXing int
     {
       Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
-      hostrssi = cmdResponse[3];
+      hostrssi = cmdResponse[2];
       readRxFifo(rxData, sizeof(rxData));
       clearFIFOs();
       clearInts();
       
-    // check RXd header data is OK (pkt compare)
-    RXbool = 1;
-    for(int i=0; i< 6; i++)
-    {
-      if(rxData[i] != txData[i])
-        RXbool = 0;
-    }
-    
-    if (RXbool) // packet header checks out
-    {
-      unpackServos(servosRX, rxData);
-      remoterssi = rxData[11];
-      for(int i=0; i<4; i++)
+      // check RXd header data is OK (pkt compare)
+      RXbool = 1;
+      for(int i=0; i< 6; i++)
       {
-        if(servosRX[i] < 1500)
-          GPIO_ResetBits(GPIOE, GPIO_Pin_8<<(i+4));
-        else
-          GPIO_SetBits(GPIOE, GPIO_Pin_8<<(i+4));
+        if(rxData[i] != txData[i])
+          RXbool = 0;
       }
       
+      if (RXbool) // packet header checks out
+      {
+        unpackServos(servosRX, rxData);
+        remoterssi = rxData[11];
+        for(int i=0; i<4; i++)
+        {
+          if(servosRX[i] < 1500)
+            GPIO_ResetBits(GPIOE, GPIO_Pin_8<<(i+4));
+          else
+            GPIO_SetBits(GPIOE, GPIO_Pin_8<<(i+4));
+        }
+        
+      }
+      RXbool = 1;
     }
-    RXbool = 1;
     
-    // dont re-enter RX mode, already got pkt
+    // UPDATE OSD HERE
+    // feed RSSI data into OSD
+    // only every second because i2c is fuckin slow
+    if((lastOSDupdate+1000) < millis()) {
+    putOSDrssi(0, (hostrssi/2)-130); // r=0 host, r=1 remote
+    putOSDrssi(1,(remoterssi/2)-130); // r=0 host, r=1 remote
+      lastOSDupdate = millis();
     }
   }
   #endif
@@ -178,7 +193,7 @@ int main(void)
     if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for int (going low)
       {
       Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
-      rssi = cmdResponse[3];
+      rssi = cmdResponse[2];
       readRxFifo(rxData, sizeof(rxData));
       clearFIFOs();
       clearInts();
@@ -207,7 +222,7 @@ int main(void)
         ResponseNeeded = 1;
         
         // update servos
-        
+        setPWM(servos);
       }
       RXbool = 1;
       
