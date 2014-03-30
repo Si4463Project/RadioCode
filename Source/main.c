@@ -2,15 +2,37 @@
 
 extern __IO uint32_t receiveLength;  // HJI
 extern __IO uint32_t packetSent;     // HJI
+volatile TouchCoords touch_coords;
 
+uint8_t rx_buffer[RX_BUFFER_LENGTH];
+uint8_t rx_counter;
+
+//#define VIDEO
 //#define TX
 #define RX
 //#define VCP_TEST
+
 
 int main(void)
 {
   //set up systick
   SysTick_Config(SystemCoreClock / 1000);
+  configureGPIO(); //Just for discovery LEDs, PE8-PE15
+  GPIO_SetBits(GPIOE, GPIO_Pin_8);
+  
+  delay(1000);
+  
+  #ifdef VIDEO
+  rx_counter = 0;
+  touch_coords.processed=1;
+//  SerialPort_Init(115200,1);
+  AR1100Init();
+  GPIO_SetBits(GPIOE, GPIO_Pin_9);
+  TW88_Init();
+  GPIO_SetBits(GPIOE, GPIO_Pin_10);
+  TW88_AddOSD_Win(0,0,0x3F,1);
+  GPIO_SetBits(GPIOE, GPIO_Pin_11);
+  #endif
   
   #if defined(TX) || defined(RX)
   configureSi4463();
@@ -19,10 +41,10 @@ int main(void)
   uint8_t cmdResponse[MAX_RESPONSE_LENGTH];
   uint8_t modem_status_data[2] = {GET_MODEM_STATUS,0x00}; //tx this to read back modem status info, make this a drv_Si function later TODO:
   
-  uint8_t txData[11] = {0x56, 0x45, 0x32, 0x4E, 0x50, 0x51, 0, 0, 0, 0, 0}; //six byte VE2NPQ, five bytes servo data 10bitx4=40bit, 11 bytes total
+  uint8_t txData[12] = {0x56, 0x45, 0x32, 0x4E, 0x50, 0x51, 0, 0, 0, 0, 0, 0}; //six byte VE2NPQ, five bytes servo data 8bitx4=40bit, 1 byte rssi, 12 bytes total
   uint8_t rxData[sizeof(txData)] = {0};
   memcpy(rxData, txData, sizeof(txData));
-  uint16_t servos[4] = {1500, 1500, 1500, 1500};
+  uint16_t servos[4] = {1500, 1500, 1000, 1500}; // AETR
   
   //move this to its own function
   uint8_t rxStartData[8] = {START_RX, 0x00, 0x00, 0x00, sizeof(rxData), 0x08, 0x03, 0x08}; //rx - channel0 - start immediately - datalength (2B) - timeout=rearmRX - valid=readymode - invalid=rearmRX
@@ -34,7 +56,7 @@ int main(void)
   USB_Init();
   
   
-  configureGPIO(); //Just for discovery LEDs, PE8-PE15
+  
 
   /**********************************
   Init TXRX
@@ -57,9 +79,10 @@ int main(void)
   #ifdef TX
   
   uint32_t lastTX = 0;
-  uint16_t servosRX[4] = {1500, 1500, 1500, 1500};
+  uint16_t servosRX[4] = {1500, 1500, 1000, 1500};
   uint32_t servotime = 0;
   uint8_t RXbool = 0;
+  uint8_t hostrssi = 0, remoterssi = 0;
   
   
   while(1)
@@ -104,6 +127,7 @@ int main(void)
     if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET)//wait for int
     {
       Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
+      hostrssi = cmdResponse[3];
       readRxFifo(rxData, sizeof(rxData));
       clearFIFOs();
       clearInts();
@@ -119,6 +143,7 @@ int main(void)
     if (RXbool) // packet header checks out
     {
       unpackServos(servosRX, rxData);
+      remoterssi = rxData[11];
       for(int i=0; i<4; i++)
       {
         if(servosRX[i] < 1500)
@@ -143,6 +168,7 @@ int main(void)
   clearInts();
   Si4436_Cmd_Response(rxStartData, sizeof(rxStartData), cmdResponse, 0);
   
+  uint8_t rssi = 0;
   uint8_t RXbool = 0;
   uint32_t ResponseNeeded = 0;
 
@@ -152,6 +178,7 @@ int main(void)
     if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for int (going low)
       {
       Si4436_Cmd_Response(modem_status_data, sizeof(modem_status_data), cmdResponse, 8);
+      rssi = cmdResponse[3];
       readRxFifo(rxData, sizeof(rxData));
       clearFIFOs();
       clearInts();
@@ -195,6 +222,7 @@ int main(void)
     if(ResponseNeeded == 1)
     {
       packServos(servos, txData);
+      txData[11] = rssi;
       clearFIFOs();
       clearInts();
       modemTxInit();
@@ -257,15 +285,15 @@ int main(void)
   
   
   /**********************************
-  Shutdown
+  Shutdown (not used)
   **********************************/
   
   #if defined(TX) || defined(RX)
-  shutdownRF();
+//  shutdownRF();
   #endif
   
   #ifdef TX
-  GPIOE->ODR |= 0xFF00; //all eight LEDs on to indicate thread complete
+//  GPIOE->ODR |= 0xFF00; //all eight LEDs on to indicate thread complete
   #endif
   
 

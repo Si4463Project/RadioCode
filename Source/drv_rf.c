@@ -5,7 +5,7 @@ uint8_t cmdResponse[MAX_RESPONSE_LENGTH];
 
 void startupRF(void)
 {
-  delay(10); //TODO: this is juts for debugging, to make sure Si shuts down clean
+  delay(10); //TODO: this is just for debugging, to make sure Si shuts down clean
   spi1_sdnmode_disable(); //start up RF
   //Start up TX command.
   //Normal mode, Non TCXO, 30MHz crystal.

@@ -27,5 +27,8 @@
 #include "drv_Si4463.h"
 #include "drv_rf.h"
 #include "drv_pwm.h"
+//#include "drv_serial.h"
+#include "drv_ar1100.h"
+#include "drv_tw88.h"
 
 #endif /* BOARD_H */

@@ -448,6 +448,16 @@
               <FileType>1</FileType>
               <FilePath>.\Source\drv_pwm.c</FilePath>
             </File>
+            <File>
+              <FileName>drv_ar1100.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\drv_ar1100.c</FilePath>
+            </File>
+            <File>
+              <FileName>drv_tw88.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\drv_tw88.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
