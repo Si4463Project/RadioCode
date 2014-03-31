@@ -80,7 +80,7 @@ uint8_t TW88_Init(void)
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
   
-	while (TW88Write(0x1C, 0x08)==0) {
+	while (TW88Write(0x1C, 0x0F)==0) { // 0F
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}
 	
@@ -94,17 +94,17 @@ uint8_t TW88_Init(void)
 	while (TW88Write(0x06,0x03)==0) { // 03
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
-	while (TW88Write(0x07,0x12)==0) { // 02
+	while (TW88Write(0x07,0x02)==0) { // 02
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}
-	while (TW88Write(0x08,0x12)==0) { // 00
+	while (TW88Write(0x08,0x00)==0) { // 00
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}
-	while (TW88Write(0x09,0x20)==0) { // F0
+	while (TW88Write(0x09,0xF0)==0) { // F0
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 			
 	}
-	while (TW88Write(0x0A,0x10)==0) { // 19
+	while (TW88Write(0x0A,0x19)==0) { // 19
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
 	while (TW88Write(0x0B,0xD0)==0) { // D0
@@ -116,19 +116,19 @@ uint8_t TW88_Init(void)
 	while (TW88Write(0x0D,0x15)==0) {
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
-	while (TW88Write(0x10,0x00)==0) { // brightness 00
+	while (TW88Write(0x10,0x40)==0) { // brightness 00
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}		
-	while (TW88Write(0x11,0x50)==0) { // contrast 50
+	while (TW88Write(0x11,0x80)==0) { // contrast 50
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}		
-	while (TW88Write(0x12,0x70)==0) { //sharpness 70
+	while (TW88Write(0x12,0x71)==0) { //sharpness 71
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
 	while (TW88Write(0x13,0x9E)==0) { //chroma U 9E
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
-	while (TW88Write(0x14,0x90)==0) {  //chroma V 90
+	while (TW88Write(0x14,0x9E)==0) {  //chroma V 9E
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
 	while (TW88Write(0x15,0x00)==0) {  //hue 
@@ -186,7 +186,7 @@ uint8_t TW88_Init(void)
 	while (TW88Write(0x29,0x15)==0) {
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
-	while (TW88Write(0x2A,0x80)==0) { // 78
+	while (TW88Write(0x2A,0x78)==0) { // 78
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}
 	while (TW88Write(0x2B,0x44)==0) {
@@ -211,7 +211,7 @@ uint8_t TW88_Init(void)
 	while (TW88Write(0x34,0x1A)==0) {
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}	
-	while (TW88Write(0x35,0x70)==0) { // 00 CLAMPING CONTROL ENABLE
+	while (TW88Write(0x35,0x40)==0) { // 00 CLAMPING CONTROL ENABLE
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
 	}
 
@@ -590,7 +590,7 @@ uint8_t TW88_Init(void)
   }
   delay(10);
   
-    while (TW88Write(0x06,0x00)==0) { // rewrite this reg
+    while (TW88Write(0x06,0x01)==0) { // rewrite this reg
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
   
@@ -782,7 +782,7 @@ void setupOSD() {
 }
 
 void putOSDrssi(uint8_t r, int8_t rssi){
-  char str[] = "   ";
+  char str[] = "    ";
   uint8_t hpos = 11, rpos = 48;
   
   sprintf(str, "%i", rssi);

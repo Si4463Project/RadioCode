@@ -7,9 +7,9 @@ volatile TouchCoords touch_coords;
 uint8_t rx_buffer[RX_BUFFER_LENGTH];
 uint8_t rx_counter;
 
-//#define TX
-#define RX
-//#define VCP_TEST
+#define TX
+//#define RX
+#define VCP_TEST
 
 #ifdef TX
 #define VIDEO
