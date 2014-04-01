@@ -9,7 +9,7 @@ uint8_t rx_counter;
 
 #define TX
 //#define RX
-#define VCP_TEST
+//#define VCP_TEST
 
 #ifdef TX
 #define VIDEO
@@ -28,6 +28,7 @@ int main(void)
   #ifdef VIDEO
   rx_counter = 0;
   touch_coords.processed=1;
+  touch_coords.p = PEN_UP;
 //  SerialPort_Init(115200,1);
   AR1100Init();
   GPIO_SetBits(GPIOE, GPIO_Pin_9);
@@ -92,6 +93,47 @@ int main(void)
   
   while(1)
   {
+    // PROCESS TOUCHSCREEN HERE
+    if (touch_coords.p == PEN_DOWN)
+    {
+      uint16_t x = touch_coords.x;
+      uint16_t y = touch_coords.y;
+//      GPIO_SetBits(GPIOE, 0x0F00);
+      if((x >= 0x0160) && (x <= 0x0280)) { // CENTER COLUMN
+        if((y >= 0x0A00) && (y <= 0x0B40)) { // UP ARROW
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        } else if((y >= 0x06E0) && (y <= 0x0820)){ // DOWN ARROW
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        }
+      } else if((x >= 0x0000) && (x <= 0x00C0)) { // LEFT COLUMN
+        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER LEFT
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS LEFT
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        }
+      } else if((x >= 0x02F0) && (x <= 0x0390)) { // RIGHT COLUMN
+        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER RIGHT
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS RIGHT
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        }
+      } else if((x >= 0x0D30) && (x <= 0x0E50)) { // THROTTLE
+        if((y >= 0x0510) && (y <= 0x0740)) {
+//          GPIO_SetBits(GPIOE, 0x0F00);
+        }
+      }
+      touch_coords.processed = 1;
+    } else
+    {
+      GPIO_ResetBits(GPIOE, 0x0F00);
+      servos[0] = 1500;
+      servos[1] = 1500;
+      servos[2] = 1000;
+      servos[3] = 1500; // AETR
+      
+      //UPDATE OSD CHARS back to white
+    }
+    
     // Send data at 50Hz
     // RX state in gaps
     if((lastTX+50) < millis())
@@ -102,28 +144,28 @@ int main(void)
       modemTX(txData, sizeof(txData), 0);
       
       // update LEDs
-      for(int i=0; i<4; i++)
-      {
-        if(servos[i] < 1500)
-          GPIO_ResetBits(GPIOE, GPIO_Pin_8<<i);
-        else
-          GPIO_SetBits(GPIOE, GPIO_Pin_8<<i);
-      }
-      
+//      for(int i=0; i<4; i++)
+//      {
+//        if(servos[i] < 1500)
+//          GPIO_ResetBits(GPIOE, GPIO_Pin_8<<i);
+//        else
+//          GPIO_SetBits(GPIOE, GPIO_Pin_8<<i);
+//      }
+//      
       // update servos
       //
       // CHANGE THIS TO BE UPDATED FROM TOUCHSCREEN
       //
-      if((servotime+1000) < millis()) // change servos every second
-      {
-        uint16_t newservo = ((servos[0] == 1000) ? 2000 : 1000);
-        for(int i=0; i<4; i++)
-        {
-          servos[i] = newservo;
-        }
-        servotime = millis();
-      }
-      
+//      if((servotime+1000) < millis()) // change servos every second
+//      {
+//        uint16_t newservo = ((servos[0] == 1000) ? 2000 : 1000);
+//        for(int i=0; i<4; i++)
+//        {
+//          servos[i] = newservo;
+//        }
+//        servotime = millis();
+//      }
+//      
       // go back to RX mode
       modemRxInit();
       clearInts();
@@ -152,13 +194,15 @@ int main(void)
       {
         unpackServos(servosRX, rxData);
         remoterssi = rxData[11];
-        for(int i=0; i<4; i++)
-        {
-          if(servosRX[i] < 1500)
-            GPIO_ResetBits(GPIOE, GPIO_Pin_8<<(i+4));
-          else
-            GPIO_SetBits(GPIOE, GPIO_Pin_8<<(i+4));
-        }
+        
+        //update ACKed LEDs
+//        for(int i=0; i<4; i++)
+//        {
+//          if(servosRX[i] < 1500)
+//            GPIO_ResetBits(GPIOE, GPIO_Pin_8<<(i+4));
+//          else
+//            GPIO_SetBits(GPIOE, GPIO_Pin_8<<(i+4));
+//        }
         
       }
       RXbool = 1;
@@ -172,6 +216,8 @@ int main(void)
     putOSDrssi(1,(remoterssi/2)-130); // r=0 host, r=1 remote
       lastOSDupdate = millis();
     }
+    
+
   }
   #endif
 

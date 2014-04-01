@@ -16,7 +16,7 @@
 #define RX_BUFFER_LENGTH      (40)
 	 
 	 
-typedef enum {PEN_DOWN=1, PEN_UP} pen_state;
+typedef enum {PEN_DOWN=0, PEN_UP} pen_state;
 
 typedef struct {
 	uint16_t x;

@@ -748,6 +748,11 @@ uint8_t TW88Read(uint8_t regAddr, uint8_t *data)
 //}
 
 void setupOSD() {
+  
+  //start with RSSI osd window
+  while (TW88Write(0x9E,0x00)==0) { // select window 0
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
   while (TW88Write(0xA1,0x00)==0) { // OSD H start
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
@@ -779,6 +784,81 @@ void setupOSD() {
     putOSDchar(35+i,rrssi[i]);
   }
   
+  // next is left control button window: ail, ele, rud
+  
+  while (TW88Write(0x9E,0x01)==0) { // select window 1
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+    while (TW88Write(0xA1,0x00)==0) { // OSD H start
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA2,0x80)==0) {  // OSD V STart
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA3,0x05)==0) {  // OSD H Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA4,0x05)==0) {  // OSD V Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA9,0xA0)==0) {  // window zoom x3
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xAC,0x08)==0) {  // window transparency 08
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0x9F,0x01)==0) { // OSD enable
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xAA,0x40)==0) {  // window memory start location 40
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  
+  //clear osd windows chars
+  char space = ' ';
+  for (int i=0; i<(0x05 * 0x05); i++)
+  {
+    putOSDchar(0x40+i, space);
+  }
+  putOSDchar(0x42, 0x1D); // up arrow
+  putOSDchar(0x45, 0x1B); // left arrow
+  putOSDchar(0x49, 0x1C); // right arrow
+  putOSDchar(0x4C, 0x1E); // down arrow
+  putOSDchar(0x54, 0x1B); // rudder left
+  putOSDchar(0x58, 0x1C); // rudder right
+  
+  //Now for throttle button
+  while (TW88Write(0x9E,0x02)==0) { // select window 2
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA1,0xA0)==0) { // OSD H start
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA0,0x12)==0) { // OSD H+V start high bits
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA2,0x0)==0) {  // OSD V STart
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA3,0x01)==0) {  // OSD H Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA4,0x01)==0) {  // OSD V Len
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xA9,0xF0)==0) {  // window zoom x4
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xAC,0x08)==0) {  // window transparency 08
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0x9F,0x01)==0) { // OSD enable
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  while (TW88Write(0xAA,0x40+(0x05*0x05))==0) {  // window memory start location 40
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  putOSDchar(0x59, 0x82); // throttle star
 }
 
 void putOSDrssi(uint8_t r, int8_t rssi){
@@ -802,10 +882,10 @@ void putOSDchar(uint8_t y, char c){
   while (TW88Write(0x96,y)==0) { // RAM Address window position type of thing char index or something
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
-  while (TW88Write(0x97,c)==0) { // char index
+  while (TW88Write(0x97,c)==0) { // char index in ROM
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
-  while (TW88Write(0x98,0x07)==0) {
+  while (TW88Write(0x98,0x07)==0) { // color attribute
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
 }
