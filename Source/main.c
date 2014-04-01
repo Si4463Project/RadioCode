@@ -85,7 +85,7 @@ int main(void)
   
   uint32_t lastTX = 0;
   uint16_t servosRX[4] = {1500, 1500, 1000, 1500};
-  uint32_t servotime = 0;
+//  uint32_t servotime = 0;
   uint8_t RXbool = 0;
   uint8_t hostrssi = 0, remoterssi = 0;
   uint32_t lastOSDupdate = 0;
@@ -94,45 +94,81 @@ int main(void)
   while(1)
   {
     // PROCESS TOUCHSCREEN HERE
+//    if (touch_coords.p == PEN_UP){
+////      touch_coords.processed = 1;
+//      GPIO_SetBits(GPIOE, 0x0F00);
+//      servos[0] = 1500;
+//      servos[1] = 1500;
+//      servos[2] = 1000;
+//      servos[3] = 1500; // AETR
+//      
+//        //UPDATE OSD CHARS back to white
+//    }
     if (touch_coords.p == PEN_DOWN)
     {
+      GPIO_ResetBits(GPIOE, 0x0F00);
       uint16_t x = touch_coords.x;
       uint16_t y = touch_coords.y;
 //      GPIO_SetBits(GPIOE, 0x0F00);
       if((x >= 0x0160) && (x <= 0x0280)) { // CENTER COLUMN
         if((y >= 0x0A00) && (y <= 0x0B40)) { // UP ARROW
-//          GPIO_SetBits(GPIOE, 0x0F00);
+          servos[ELE] = 1200;
+          putOSDchar(0x42, 0x1D, 0x04); // red up arrow
+          putOSDchar(0x4C, 0x1E, 0x07); // white down arrow
         } else if((y >= 0x06E0) && (y <= 0x0820)){ // DOWN ARROW
-//          GPIO_SetBits(GPIOE, 0x0F00);
-        }
-      } else if((x >= 0x0000) && (x <= 0x00C0)) { // LEFT COLUMN
-        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER LEFT
-//          GPIO_SetBits(GPIOE, 0x0F00);
-        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS LEFT
-//          GPIO_SetBits(GPIOE, 0x0F00);
-        }
-      } else if((x >= 0x02F0) && (x <= 0x0390)) { // RIGHT COLUMN
-        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER RIGHT
-//          GPIO_SetBits(GPIOE, 0x0F00);
-        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS RIGHT
-//          GPIO_SetBits(GPIOE, 0x0F00);
-        }
-      } else if((x >= 0x0D30) && (x <= 0x0E50)) { // THROTTLE
-        if((y >= 0x0510) && (y <= 0x0740)) {
-//          GPIO_SetBits(GPIOE, 0x0F00);
+          servos[ELE] = 1800;
+          putOSDchar(0x42, 0x1D, 0x07); // white up arrow
+          putOSDchar(0x4C, 0x1E, 0x04); // red down arrow
+        } else if((y >= 0x0820) && (y <= 0x09D0)){ // RESET CONTROLS
+          servos[ELE] = 1500;
+          servos[AIL] = 1500;
+          servos[RUD] = 1500;
+          putOSDchar(0x42, 0x1D, 0x07); // white up arrow
+          putOSDchar(0x4C, 0x1E, 0x07); // white down arrow
+          putOSDchar(0x45, 0x1B, 0x07); // white left arrow
+          putOSDchar(0x49, 0x1C, 0x07); // white right arrow
+          putOSDchar(0x54, 0x1B, 0x07); // white rudder left
+          putOSDchar(0x58, 0x1C, 0x07); // white rudder right
         }
       }
-      touch_coords.processed = 1;
-    } else
-    {
-      GPIO_ResetBits(GPIOE, 0x0F00);
-      servos[0] = 1500;
-      servos[1] = 1500;
-      servos[2] = 1000;
-      servos[3] = 1500; // AETR
       
-      //UPDATE OSD CHARS back to white
-    }
+      else if((x >= 0x0001) && (x <= 0x00E0)) { // LEFT COLUMN
+        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER LEFT
+          servos[RUD] = 1200;
+          putOSDchar(0x54, 0x1B, 0x04); // red rudder left
+          putOSDchar(0x58, 0x1C, 0x07); // white rudder right
+        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS LEFT
+          servos[AIL] = 1200;
+          putOSDchar(0x45, 0x1B, 0x04); // red left arrow
+          putOSDchar(0x49, 0x1C, 0x07); // white right arrow
+        }
+      }
+      
+      else if((x >= 0x02F0) && (x <= 0x0390)) { // RIGHT COLUMN
+        if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER RIGHT
+          servos[RUD] = 1800;
+          putOSDchar(0x54, 0x1B, 0x07); // white rudder left
+          putOSDchar(0x58, 0x1C, 0x04); // red rudder right
+        } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS RIGHT
+          servos[AIL] = 1800;
+          putOSDchar(0x45, 0x1B, 0x07); // white left arrow
+          putOSDchar(0x49, 0x1C, 0x04); // red right arrow
+        }
+      }
+      
+      else if((x >= 0x0D30) && (x <= 0x0E50)) { // THROTTLE COLUMN
+        if((y >= 0x0510) && (y <= 0x0740)) { // MOTOR ON
+          servos[THR] = 1300;
+          putOSDchar(0x59, 0x1D, 0x04); // throttle up red
+          putOSDchar(0x5A, 0x1E, 0x07); // throttle down white
+        } else if ((y >= 0x02E0) && (y <= 0x0470)) { // MOTOR OFF
+          putOSDchar(0x59, 0x1D, 0x07); // throttle up white
+          putOSDchar(0x5A, 0x1E, 0x04); // throttle down red
+          servos[THR] = 1000;
+        }
+      }
+//      touch_coords.processed = 1;
+    } 
     
     // Send data at 50Hz
     // RX state in gaps

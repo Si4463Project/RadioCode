@@ -2,9 +2,9 @@
 #define __TW88__H
 
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+//#ifdef __cplusplus
+// extern "C" {
+//#endif
 	 
 //#include "stm32303c_eval.h"
 
@@ -15,9 +15,19 @@
 
 #define TW88_CMD1 0x02 	 
 
-	 
+#define AILLEFTLOC 0x45
+#define AILLEFTCHR 0x1B
+#define AILRIGHTLOC 0x49
+#define AILRIGHTCHR 0x1C
 
-	 
+
+
+
+
+   
+   
+   
+   
 //extern void Delay(__IO uint32_t nTime);	 
 	 
 	 
@@ -37,15 +47,15 @@ void ReadAllTW88Regs(void);
 
 void setupOSD(void);
 void putOSDrssi(uint8_t r, int8_t rssi); // r=0 host, r=1 remote
-void putOSDchar(uint8_t y, char c);
+void putOSDchar(uint8_t y, char c, uint8_t color);
 
 
 
 
 
-#ifdef __cplusplus
-}
-#endif
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif
 

@@ -774,14 +774,14 @@ void setupOSD() {
   char rrssi[] = "Remote RSSI:     dBm";
   
   for (int i=0; i<64;i++) {
-    putOSDchar(i,' ');
+    putOSDchar(i,' ', 0x07);
   }
   
   for(int i=0; i<(sizeof(hrssi)-1);i++) {
-    putOSDchar(0+i,hrssi[i]);
+    putOSDchar(0+i,hrssi[i], 0x07);
   }
   for(int i=0; i<(sizeof(rrssi)-1);i++) {
-    putOSDchar(35+i,rrssi[i]);
+    putOSDchar(35+i,rrssi[i], 0x07);
   }
   
   // next is left control button window: ail, ele, rud
@@ -816,16 +816,17 @@ void setupOSD() {
   
   //clear osd windows chars
   char space = ' ';
-  for (int i=0; i<(0x05 * 0x05); i++)
+  for (int i=0; i<(0x05 * 0x05)+1; i++)
   {
-    putOSDchar(0x40+i, space);
+    putOSDchar(0x40+i, space, 0x07);
   }
-  putOSDchar(0x42, 0x1D); // up arrow
-  putOSDchar(0x45, 0x1B); // left arrow
-  putOSDchar(0x49, 0x1C); // right arrow
-  putOSDchar(0x4C, 0x1E); // down arrow
-  putOSDchar(0x54, 0x1B); // rudder left
-  putOSDchar(0x58, 0x1C); // rudder right
+  putOSDchar(0x42, 0x1D, 0x07); // up arrow
+  putOSDchar(0x45, 0x1B, 0x07); // left arrow
+  putOSDchar(0x49, 0x1C, 0x07); // right arrow
+  putOSDchar(0x4C, 0x1E, 0x07); // down arrow
+  putOSDchar(0x54, 0x1B, 0x07); // rudder left
+  putOSDchar(0x58, 0x1C, 0x07); // rudder right
+  putOSDchar(0x47, 'X', 0x07); // middle dot
   
   //Now for throttle button
   while (TW88Write(0x9E,0x02)==0) { // select window 2
@@ -843,7 +844,7 @@ void setupOSD() {
   while (TW88Write(0xA3,0x01)==0) {  // OSD H Len
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
-  while (TW88Write(0xA4,0x01)==0) {  // OSD V Len
+  while (TW88Write(0xA4,0x02)==0) {  // OSD V Len
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
   while (TW88Write(0xA9,0xF0)==0) {  // window zoom x4
@@ -858,7 +859,8 @@ void setupOSD() {
   while (TW88Write(0xAA,0x40+(0x05*0x05))==0) {  // window memory start location 40
       I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
-  putOSDchar(0x59, 0x82); // throttle star
+  putOSDchar(0x59, 0x1D, 0x07); // throttle up
+  putOSDchar(0x5A, 0x1E, 0x04); // throttle down
 }
 
 void putOSDrssi(uint8_t r, int8_t rssi){
@@ -869,23 +871,23 @@ void putOSDrssi(uint8_t r, int8_t rssi){
   
   if(r) { // r=0 host, r=1 remote
     for(int i=0; i<(sizeof(str)-1);i++) {
-      putOSDchar(rpos+i,str[i]);
+      putOSDchar(rpos+i,str[i], 0x07);
     }
   } else {
     for(int i=0; i<(sizeof(str)-1);i++) {
-      putOSDchar(hpos+i,str[i]);
+      putOSDchar(hpos+i,str[i], 0x07);
     }
   }
 }
 
-void putOSDchar(uint8_t y, char c){
+void putOSDchar(uint8_t y, char c, uint8_t color){
   while (TW88Write(0x96,y)==0) { // RAM Address window position type of thing char index or something
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
   while (TW88Write(0x97,c)==0) { // char index in ROM
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
-  while (TW88Write(0x98,0x07)==0) { // color attribute
+  while (TW88Write(0x98,color)==0) { // color attribute
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
   }
 }

@@ -2,6 +2,13 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+  enum {
+    AIL=0,
+    ELE,
+    THR,
+    RUD
+  };
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>

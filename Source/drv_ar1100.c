@@ -10,69 +10,161 @@ extern __IO TouchCoords touch_coords;
 */
 void USART1_IRQHandler(void)
 {
-		// one pen down event => p=1 then p=0 
-	  // one pen up event => p=0 then p=1 then p=0
-	  // hence a max of 15 bytes we can read for a given touch event
-
-		
-    if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
-    {
-        /* Read one byte from the receive data register */
-        touch_buffer[touch_counter] = (USART_ReceiveData(USART1) & 0x00FF); //make them 8 bits
-			
-			
-				if (touch_counter==9) {
-						//ok we got 2x 5 bytes reports check to see what types they are
-					  if ((touch_buffer[0]==AR1100_PEN_DOWN_FLAG) && (touch_buffer[5]==AR1100_PEN_UP_FLAG)) {
-							  //ok this a real touch down event so we can signal it ! by getting the coords
-								touch_coords.p=PEN_DOWN;
-								touch_coords.processed=0;
-								touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
-							  touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
-								//now clean up this rx buffer
-							  memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
-							  touch_counter = 0;
-								return;
-						} 
-				}
-				
-			
-			
-        if(touch_counter + 1 == MAX_BUFFSIZE)
-        {
-						//this has to be a touch up event ! if not ignore it
-					  if ((touch_buffer[0]==AR1100_PEN_UP_FLAG) && 
-																	(touch_buffer[5]==AR1100_PEN_DOWN_FLAG) &&
-																	(touch_buffer[10]==AR1100_PEN_UP_FLAG) ) {
-								
-								touch_coords.p=PEN_UP;
-								touch_coords.processed=0;
-								touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
-							  touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
-												
-							
-							
-						}							
-					
-					  //now clean up this rx buffer	
-            memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
-            touch_counter = 0;
-        }
-        else
-        {
-            touch_counter++;
-        }
+  if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+  {
+    // Read one byte from the receive data register
+    
+    touch_buffer[touch_counter] = (USART_ReceiveData(USART1) & 0x00FF); //make them 8 bits
+    touch_counter++;
+    
+    if (touch_counter==5) {
+      // process pkt
+      
+      if (touch_buffer[0]==AR1100_PEN_DOWN_FLAG) {
+        //ok this a real touch down event so we can signal it ! by getting the coords
+        touch_coords.p=PEN_DOWN;
+        touch_coords.processed=0;
+        touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
+        touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
+      } else if (touch_buffer[0]==AR1100_PEN_UP_FLAG){
+        touch_coords.p=PEN_UP;
+      }
+      //now clean up this rx buffer
+      memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+      touch_counter = 0;
     }
-		
-		if (USART_GetITStatus(USART1, USART_FLAG_ORE) != RESET) {
-					USART_ClearITPendingBit(USART1,USART_IT_ORE);
-					memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
-					touch_counter = 0;			 
-					
-		}	
-		
-		
+  }
+  
+  if (USART_GetITStatus(USART1, USART_FLAG_ORE) != RESET) {
+    USART_ClearITPendingBit(USART1,USART_IT_ORE);
+    memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+    touch_counter = 0;
+  }
 }
+
+
+/*
+  if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+  {
+    // Read one byte from the receive data register
+    
+    touch_buffer[touch_counter] = (USART_ReceiveData(USART1) & 0x00FF); //make them 8 bits
+    touch_counter++;
+    
+    if (touch_counter==10) {
+      // process pkt
+
+      //ok we got 2x 5 bytes reports check to see what types they are
+      if ((touch_buffer[0]==AR1100_PEN_UP_FLAG) && (touch_buffer[5]==AR1100_PEN_DOWN_FLAG))
+      {
+        //ok this a real touch down event so we can signal it ! by getting the coords
+        touch_coords.p=PEN_DOWN;
+        touch_coords.processed=0;
+        touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
+        touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
+        //now clean up this rx buffer
+        memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+        touch_counter = 0;
+        return;
+      }
+      
+      if(touch_counter == MAX_BUFFSIZE) {
+        //this has to be a touch up event ! if not ignore it
+        if ((touch_buffer[0]==AR1100_PEN_UP_FLAG) && (touch_buffer[5]==AR1100_PEN_DOWN_FLAG) && (touch_buffer[10]==AR1100_PEN_UP_FLAG) )
+        {
+          touch_coords.p=PEN_UP;
+        }
+        //now clean up this rx buffer	
+        memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+        touch_counter = 0;
+      }
+    }
+  }
+}
+*/
+
+
+
+
+
+
+
+
+//		// one pen down event => p=1 then p=0 
+//	  // one pen up event => p=0 then p=1 then p=0
+  
+  // DEFAULT
+  // PENDOWN = mode 5: report (P = 0), report (P = 1);
+  // PENUP = mode 5: report (P = 0), report (P = 1);
+  // SET BY US PD2 PD1 PD0 PM1 PM0 PU2 PU1 PU0 = 0x41 = 0b0100 0001
+  // PENDOWN = mode 2: REPORT (P=1)
+  // PENUP = mode 1: REPORT (P=0)
+  // MODE READ BACK FROM THE REGISTER 0x64 = 0b0110 0100
+  // PENDOWN = mode 3: REPORT (P=1), REPORT (P=0)
+  // PENUP = mode 4: REPORT (P=0), REPORT (P=1), REPORT (P=0)
+  
+//	  // hence a max of 15 bytes we can read for a given touch event
+
+//		
+//    if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
+//    {
+//        /* Read one byte from the receive data register */
+//        touch_buffer[touch_counter] = (USART_ReceiveData(USART1) & 0x00FF); //make them 8 bits
+//			
+//			
+////				if (touch_counter==9) {
+//						//ok we got 2x 5 bytes reports check to see what types they are
+////					  if ((touch_buffer[0]==AR1100_PEN_DOWN_FLAG) && (touch_buffer[5]==AR1100_PEN_UP_FLAG)) {
+//            if (touch_buffer[0]==AR1100_PEN_DOWN_FLAG) {
+//							  //ok this a real touch down event so we can signal it ! by getting the coords
+//								touch_coords.p=PEN_DOWN;
+//								touch_coords.processed=0;
+//								touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
+//							  touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
+//								//now clean up this rx buffer
+//							  memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+//							  touch_counter = 0;
+//								return;
+//						} 
+////				}
+//				
+//			
+//			
+////        if(touch_counter + 1 == MAX_BUFFSIZE) {
+////        if(touch_counter + 1 == MAX_BUFFSIZE) {
+//						//this has to be a touch up event ! if not ignore it
+////					  if ((touch_buffer[0]==AR1100_PEN_UP_FLAG) && 
+////																	(touch_buffer[5]==AR1100_PEN_DOWN_FLAG) &&
+////																	(touch_buffer[10]==AR1100_PEN_UP_FLAG) ) {
+//								else if (touch_buffer[0]==AR1100_PEN_UP_FLAG){
+//								touch_coords.p=PEN_UP;
+//								touch_coords.processed=0;
+//								touch_coords.x=(touch_buffer[2] <<7) | touch_buffer[1];
+//							  touch_coords.y=(touch_buffer[4] <<7) | touch_buffer[3];
+//												
+//							
+//							
+//						}							
+//					
+//					  //now clean up this rx buffer	
+//            memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+//            touch_counter = 0;
+//        }
+//        else
+//        {
+//            touch_counter++;
+//        }
+//    }
+//		
+//		if (USART_GetITStatus(USART1, USART_FLAG_ORE) != RESET) {
+//					USART_ClearITPendingBit(USART1,USART_IT_ORE);
+//					memset((void*)touch_buffer, 0, MAX_BUFFSIZE);
+//					touch_counter = 0;			 
+//					
+//		}	
+//		
+//		
+//}
 
 
 void AR1100IRQSetup(FunctionalState newstatus)
@@ -114,7 +206,7 @@ void AR1100Init(void)
     /* Configure USART Tx as alternate function push-pull */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
@@ -168,14 +260,14 @@ void AR1100Init(void)
 			
 		//AR1100_ReadReg(0x0D,&regval);
 		//AR1100_WriteReg(0x0D, 0x88);	
-		AR1100_WriteReg(0x0C, 0x41); //set the touch mode
-		AR1100_ReadReg(0x0C,&regval);	
+    AR1100_WriteReg(0x0C, 0x41); //set the touch mode 41 = 201, 51 = 221
+    AR1100_ReadReg(0x0C,&regval);
 			
 			
 		
-		AR1100TouchEnable();
+    AR1100TouchEnable();
 		
-		AR1100IRQSetup(ENABLE);
+    AR1100IRQSetup(ENABLE);
 
 	
 }
@@ -223,8 +315,8 @@ void AR1100TouchEnable(void)
   USART_SendData(USART1,(0x00FF)&0x12);
 
 		
-	uint8_t buff[6];
-	AR1100_ReadData(buff,6);  
+	uint8_t buff[2];
+	AR1100_ReadData(buff,2);  
 			
 }
 
@@ -238,8 +330,8 @@ void AR1100TouchDisable(void)
 	USART_SendData(USART1, (0x00FF)&0x13);
 		
 	//now read the data or we will have overruns
-	uint8_t buff[6];
-	AR1100_ReadData(buff,6);
+	uint8_t buff[2];
+	AR1100_ReadData(buff,2);
 		
 	
 }
@@ -248,38 +340,38 @@ void AR1100TouchDisable(void)
 void AR1100_WriteReg(uint8_t reg_addr, uint8_t regval)
 {
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&0x55);
+	 USART_SendData(USART1, 0x55);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&0x03); //this is a problem !
+	 USART_SendData(USART1, 0x03); //this is a problem !
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&0x21);
+	 USART_SendData(USART1, 0x21);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}	 
-	 USART_SendData(USART1, (0x00FF)&0x00);
+	 USART_SendData(USART1, 0x00);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}	 
-	 USART_SendData(USART1, (0x00FF)&reg_addr);
+	 USART_SendData(USART1, reg_addr);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&regval);
+	 USART_SendData(USART1, regval);
 
 
-	uint8_t buff[6];
-	AR1100_ReadData(buff,6);
+	uint8_t buff[2];
+	AR1100_ReadData(buff,2);
 		 
 }
 
 void AR1100_ReadReg(uint8_t reg_addr, uint8_t *regval)
 {
-	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}	
-	 USART_SendData(USART1, (0x00FF)&0x55);
-	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}	
-	 USART_SendData(USART1, (0x00FF)&0x04);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&0x20);
-	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}	
-	 USART_SendData(USART1, (0x00FF)&0x00);
+	 USART_SendData(USART1, 0x55);
 	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
-	 USART_SendData(USART1, (0x00FF)&reg_addr);
-	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}		
-	 USART_SendData(USART1, (0x00FF)&0x01);	
+	 USART_SendData(USART1, 0x04);
+	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
+	 USART_SendData(USART1, 0x20);
+	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
+	 USART_SendData(USART1, 0x00);
+	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
+	 USART_SendData(USART1, reg_addr);
+	 while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){}
+	 USART_SendData(USART1, 0x01);
 	 
 	 //now read the data
 	 
