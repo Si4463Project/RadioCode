@@ -137,11 +137,11 @@ int main(void)
       
       else if((x >= 0x0001) && (x <= 0x00E0)) { // LEFT COLUMN
         if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER LEFT
-          servos[RUD] = 1200;
+          servos[RUD] = 1800;
           putOSDchar(0x54, 0x1B, 0x04); // red rudder left
           putOSDchar(0x58, 0x1C, 0x07); // white rudder right
         } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS LEFT
-          servos[AIL] = 1200;
+          servos[AIL] = 1800;
           putOSDchar(0x45, 0x1B, 0x04); // red left arrow
           putOSDchar(0x49, 0x1C, 0x07); // white right arrow
         }
@@ -149,11 +149,11 @@ int main(void)
       
       else if((x >= 0x02F0) && (x <= 0x0390)) { // RIGHT COLUMN
         if((y >= 0x02E0) && (y <= 0x0470)) { // RUDDER RIGHT
-          servos[RUD] = 1800;
+          servos[RUD] = 1200;
           putOSDchar(0x54, 0x1B, 0x07); // white rudder left
           putOSDchar(0x58, 0x1C, 0x04); // red rudder right
         } else if((y >= 0x0820) && (y <= 0x09D0)){ // AILERONS RIGHT
-          servos[AIL] = 1800;
+          servos[AIL] = 1200;
           putOSDchar(0x45, 0x1B, 0x07); // white left arrow
           putOSDchar(0x49, 0x1C, 0x04); // red right arrow
         }
@@ -161,7 +161,7 @@ int main(void)
       
       else if((x >= 0x0D30) && (x <= 0x0E50)) { // THROTTLE COLUMN
         if((y >= 0x0510) && (y <= 0x0740)) { // MOTOR ON
-          servos[THR] = 1300;
+          servos[THR] = 1100;
           putOSDchar(0x59, 0x1D, 0x04); // throttle up red
           putOSDchar(0x5A, 0x1E, 0x07); // throttle down white
         } else if ((y >= 0x02E0) && (y <= 0x0470)) { // MOTOR OFF

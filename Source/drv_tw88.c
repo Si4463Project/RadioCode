@@ -74,6 +74,7 @@ uint8_t TW88_Init(void)
 	while (TW88Write(0xff,0x00)==0) {
 			//now we detected an error ... we shall resend ?
 			I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    delay(50);
 	}
   
   while (TW88Write(0x06,0x80)==0) { // force reset
