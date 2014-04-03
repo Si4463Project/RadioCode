@@ -880,6 +880,57 @@ void putOSDrssi(uint8_t r, int8_t rssi){
   }
 }
 
+void putOSDfailsafe(uint8_t on, uint8_t setup) {
+  
+  while (TW88Write(0x9E,0x03)==0) { // select window 3
+      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  }
+  
+  if(on)
+  {
+    while (TW88Write(0x9F,0x01)==0) { // OSD enable
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+  } else {
+    while (TW88Write(0x9F,0x00)==0) { // OSD disable
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+  }
+  
+  if(setup) {
+    while (TW88Write(0xA1,0xFF)==0) { // OSD H start
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+  //  while (TW88Write(0xA0,0x00)==0) { // OSD H+V start high bits
+  //      I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+  //  }
+    while (TW88Write(0xA2,0x80)==0) {  // OSD V STart
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    while (TW88Write(0xA3,0x09)==0) {  // OSD H Len
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    while (TW88Write(0xA4,0x01)==0) {  // OSD V Len
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    while (TW88Write(0xA9,0xF0)==0) {  // window zoom x4
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    while (TW88Write(0xAC,0x08)==0) {  // window transparency 08
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    while (TW88Write(0xAA,0x5B)==0) {  // window memory start location
+        I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);
+    }
+    
+    char failstr[] = "LINK LOST";
+    
+    for(int i=0; i<(sizeof(failstr)-1);i++) {
+      putOSDchar(0x5B+i,failstr[i], 0x04);
+    }
+  }
+}
+
 void putOSDchar(uint8_t y, char c, uint8_t color){
   while (TW88Write(0x96,y)==0) { // RAM Address window position type of thing char index or something
         I2CReset(I2C1,GPIOB,GPIO_Pin_6,GPIO_Pin_7);

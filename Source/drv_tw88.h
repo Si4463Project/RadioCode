@@ -47,6 +47,7 @@ void ReadAllTW88Regs(void);
 
 void setupOSD(void);
 void putOSDrssi(uint8_t r, int8_t rssi); // r=0 host, r=1 remote
+void putOSDfailsafe(uint8_t on, uint8_t setup);
 void putOSDchar(uint8_t y, char c, uint8_t color);
 
 

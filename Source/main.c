@@ -36,6 +36,7 @@ int main(void)
   GPIO_SetBits(GPIOE, GPIO_Pin_10);
 //  TW88_AddOSD_Win(0,0,0x3F,1);
   setupOSD();
+  putOSDfailsafe(0,1);
   GPIO_SetBits(GPIOE, GPIO_Pin_11);
   #endif
   
@@ -89,6 +90,8 @@ int main(void)
   uint8_t RXbool = 0;
   uint8_t hostrssi = 0, remoterssi = 0;
   uint32_t lastOSDupdate = 0;
+  uint32_t lastRXtime = 0;
+  volatile uint8_t failsafe_on = 1;
   
   
   while(1)
@@ -170,6 +173,12 @@ int main(void)
 //      touch_coords.processed = 1;
     } 
     
+    if( ( (lastRXtime+2000) < millis()) & (failsafe_on==0)) // if 2s has passed since last RX and failsafe isnt already on
+    {
+      failsafe_on = 1;
+      putOSDfailsafe(1,0);
+    }
+    
     // Send data at 50Hz
     // RX state in gaps
     if((lastTX+50) < millis())
@@ -231,6 +240,11 @@ int main(void)
         unpackServos(servosRX, rxData);
         remoterssi = rxData[11];
         
+        lastRXtime = millis();
+        if(failsafe_on == 1) {
+          putOSDfailsafe(0,0);
+          failsafe_on = 0;
+        }
         //update ACKed LEDs
 //        for(int i=0; i<4; i++)
 //        {
@@ -268,9 +282,21 @@ int main(void)
   uint8_t rssi = 0;
   uint8_t RXbool = 0;
   uint32_t ResponseNeeded = 0;
+  uint32_t lastRXtime = 0;
+  uint8_t failsafe_on = 1;
 
   while (1)
   {
+    if( ( (lastRXtime+2000) < millis()) & (failsafe_on==0)) // if 2s has passed since last RX and failsafe isnt already on
+    {
+      failsafe_on = 1;
+      servos[0] = 1500;
+      servos[1] = 1500;
+      servos[2] = 1000;
+      servos[3] = 1500; // AETR
+      setPWM(servos);
+    }
+    
     
     if(GPIO_ReadInputDataBit(nIRQ_GPIO,nIRQ) == Bit_RESET) // wait for int (going low)
       {
@@ -305,6 +331,9 @@ int main(void)
         
         // update servos
         setPWM(servos);
+        
+        lastRXtime = millis();
+        failsafe_on = 0;
       }
       RXbool = 1;
       
